@@ -57,6 +57,8 @@
 
 如果 CLI 版本不支持单独的 update 命令，可重新添加 marketplace 后通过 plugin 管理命令检查版本。当前版本见 plugin manifest 和 [`CHANGELOG.md`](../CHANGELOG.md)。
 
+从 `0.1.0` 升级到 `0.2.0` 时注意：plugin 不再随包注册 Stop hook。已经执行过 bootstrap 的项目会保留原有注册项，无需操作；从未 bootstrap 的项目升级后不会收到任何门禁提示，需要按下一节重新启用。
+
 卸载 plugin：
 
 ```text

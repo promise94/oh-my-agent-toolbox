@@ -1,0 +1,27 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Marketplace tests
+        run: python -m unittest discover -s marketplace-tests -v
+
+      - name: Plugin script tests
+        # 显式清掉 CLAUDE_PROJECT_DIR，避免本地运行时状态影响状态机测试。
+        run: env -u CLAUDE_PROJECT_DIR python -m unittest discover -s plugins/oh-my-skills/tests -v
+
+      - name: Static checks
+        run: |
+          python -m py_compile plugins/oh-my-skills/scripts/*.py plugins/oh-my-skills/tests/*.py marketplace-tests/*.py
+          bash -n plugins/oh-my-skills/hooks/phase-gate.sh
+          python plugins/oh-my-skills/scripts/validate-config.py plugins/oh-my-skills/config-templates/*.json

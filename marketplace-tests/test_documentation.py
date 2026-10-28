@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -5,6 +6,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class DocumentationTests(unittest.TestCase):
+    def test_documented_version_matches_manifests(self):
+        plugin = json.loads(
+            (ROOT / "plugins/oh-my-skills/.claude-plugin/plugin.json").read_text(encoding="utf-8")
+        )
+        marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
+        version = plugin["version"]
+        self.assertEqual(marketplace["metadata"]["version"], version)
+        self.assertEqual(marketplace["plugins"][0]["version"], version)
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn(f"当前版本均为 `{version}`", readme)
+        changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+        self.assertIn(f"## [{version}]", changelog)
+
     def test_installation_contract_is_consistent(self):
         documents = [
             ROOT / "README.md",

@@ -1,11 +1,17 @@
 {
   "name": "oh-my-agent-toolbox",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Reusable Claude and Codex skills, hooks, agents, MCP templates, and project configuration helpers.",
   "author": {
     "name": "oh-my-agent-toolbox maintainers"
   },
   "repository": "https://github.com/promise94/oh-my-agent-toolbox",
   "license": "MIT",
-  "keywords": ["skills", "hooks", "agents", "MCP", "planning"]
+  "keywords": [
+    "skills",
+    "hooks",
+    "agents",
+    "MCP",
+    "planning"
+  ]
 }
