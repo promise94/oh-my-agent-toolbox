@@ -1,4 +1,4 @@
 interface:
   display_name: "标准计划"
-  short_description: "为复杂或可恢复的实施工作创建计划"
-  default_prompt: "使用 $plan-standard 处理这个需要计划的任务：创建或恢复持久化计划，按需进行独立评审，逐阶段执行并在完成后审计。计划和报告默认使用中文；明显的低风险修复和简单编辑不要使用本 skill。"
+  short_description: "为复杂或可恢复的实施工作创建 Claude/Codex 计划"
+  default_prompt: "使用 $plan-standard 处理需要计划的任务：创建或恢复 .claude 持久化计划，按需通过 /codex:setup 与 /codex:rescue 进行独立评审，逐阶段执行并在完成后审计。计划和报告默认使用中文；明显的低风险修复和简单编辑不要使用本 skill。"

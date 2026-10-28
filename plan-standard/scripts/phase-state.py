@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""Archive the terminal plan state and release the active plan pointer."""
+"""Archive a terminal Claude plan state and release the active pointer."""
 
 import argparse
 import json
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
-
 
 TERMINAL_STAGES = {"completed", "cancelled", "abandoned"}
 PLAN_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -19,7 +17,7 @@ def fail(message: str) -> int:
 
 
 def archive(root: Path) -> int:
-    state_path = root / ".codex" / "phase_state.json"
+    state_path = root / ".claude" / "phase_state.json"
     if not state_path.is_file():
         print("PASS: no active plan state to archive")
         return 0
@@ -40,26 +38,30 @@ def archive(root: Path) -> int:
     if stage not in TERMINAL_STAGES:
         return fail(f"only terminal plans can be archived (workflow_stage={stage})")
     if stage == "completed":
+        if not state.get("terminal_at") or not state.get("terminal_reason"):
+            return fail("completed plan must have terminal_at and terminal_reason")
         if state.get("phase_status") != "PASS":
             return fail("completed plan must have phase_status=PASS")
+        if state.get("codex_review_status") not in {"completed", "waived"}:
+            return fail("completed plan must have codex_review_status=completed or waived")
         if state.get("audit_status") not in {"completed", "waived"}:
             return fail("completed plan must have audit_status=completed or waived")
-    elif not state.get("terminal_at") or not state.get("terminal_reason"):
-        return fail(f"{stage} plan must have terminal_at and terminal_reason")
-    if not state.get("terminal_at"):
-        state["terminal_at"] = datetime.now(timezone.utc).isoformat()
+    if stage in {"cancelled", "abandoned"}:
+        if not state.get("terminal_at") or not state.get("terminal_reason"):
+            return fail(f"{stage} plan must have terminal_at and terminal_reason")
+        if state.get("codex_review_status") not in {"completed", "waived"}:
+            return fail(f"{stage} plan must have codex_review_status=completed or waived")
+        if state.get("audit_status") not in {"completed", "waived"}:
+            return fail(f"{stage} plan must have audit_status=completed or waived")
 
-    history_dir = root / ".codex" / "plan-history"
+    history_dir = root / ".claude" / "plan-history"
     history_dir.mkdir(parents=True, exist_ok=True)
     history_path = history_dir / f"{plan_id}.json"
     if history_path.exists():
         return fail(f"archive already exists: {history_path}")
 
     try:
-        history_path.write_text(
-            json.dumps(state, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
+        history_path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         state_path.unlink()
     except OSError as exc:
         if history_path.exists():
@@ -74,9 +76,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("archive",))
     args = parser.parse_args()
-    if args.command == "archive":
-        return archive(Path.cwd())
-    return 2
+    return archive(Path.cwd()) if args.command == "archive" else 2
 
 
 if __name__ == "__main__":
