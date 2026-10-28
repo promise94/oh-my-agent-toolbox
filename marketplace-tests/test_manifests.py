@@ -27,7 +27,7 @@ class MarketplaceTests(unittest.TestCase):
         self.assertTrue((PLUGIN / "skills/plan-standard/SKILL.md").is_file())
         self.assertTrue((PLUGIN / "skills/codex-plan-review/SKILL.md").is_file())
         self.assertTrue((PLUGIN / "skills/codex-plan-audit/SKILL.md").is_file())
-        self.assertTrue((PLUGIN / "hooks/hooks.json").is_file())
+        self.assertTrue((PLUGIN / "hooks/phase-gate.sh").is_file())
         self.assertTrue((PLUGIN / "agents/openai.yaml").is_file())
         result = subprocess.run(
             [sys.executable, str(PLUGIN / "scripts/validate-config.py"),

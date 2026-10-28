@@ -107,15 +107,9 @@ codex-plan-audit
 
 ## Hook 没有生效
 
-### 先确认 plugin hook 已加载
+plugin 安装后不会自动启用门禁；阶段门禁只存在于执行过 bootstrap 的项目中。
 
-重新加载 plugin：
-
-```text
-/reload-plugins
-```
-
-### 再确认目标项目已 bootstrap
+### 先确认目标项目已 bootstrap
 
 在目标项目根目录运行：
 

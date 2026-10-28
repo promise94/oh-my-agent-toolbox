@@ -5,7 +5,7 @@
 - `plugins/<plugin>/.claude-plugin/plugin.json`：plugin 元数据；本仓库的公开 plugin 名称是 `oh-my-agent-toolbox`。
 - `plugins/<plugin>/skills/<skill>/SKILL.md`：可调用 skill；每个 skill 使用独立目录。
 - `plugins/<plugin>/scripts/`：可测试的实现脚本。
-- `plugins/<plugin>/hooks/hooks.json`：plugin hook 声明；命令使用 `${CLAUDE_PLUGIN_ROOT}`。
+- `plugins/<plugin>/hooks/`：bootstrap 安装到项目 `.claude/hooks/` 的 hook 源文件；plugin 本身不注册 Stop hook，门禁只在执行过 bootstrap 的项目中生效。
 - `plugins/<plugin>/agents/`：agent 定义或展示元数据。
 - `plugins/<plugin>/config-templates/`：不含凭证的配置模板。
 - `plugins/<plugin>/tests/`：不依赖网络和用户配置的测试。

@@ -1,4 +1,3 @@
-import json
 import unittest
 from pathlib import Path
 
@@ -14,7 +13,7 @@ class PluginLayoutTests(unittest.TestCase):
             PLUGIN / "skills/codex-plan-review/SKILL.md",
             PLUGIN / "skills/codex-plan-audit/SKILL.md",
             PLUGIN / "agents/plan-standard.md",
-            PLUGIN / "hooks/hooks.json",
+            PLUGIN / "hooks/phase-gate.sh",
             PLUGIN / "scripts/bootstrap.py",
             PLUGIN / "scripts/phase-gate.py",
             PLUGIN / "scripts/phase-state.py",
@@ -27,11 +26,12 @@ class PluginLayoutTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertTrue(path.is_file(), path)
 
-    def test_hook_uses_plugin_root(self):
-        hooks = json.loads((PLUGIN / "hooks/hooks.json").read_text(encoding="utf-8"))
-        command = hooks["hooks"]["Stop"][0]["hooks"][0]["command"]
-        self.assertIn("${CLAUDE_PLUGIN_ROOT}", command)
-        self.assertNotIn(str(ROOT), command)
+    def test_plugin_ships_no_stop_hook(self):
+        """门禁只通过 bootstrap 装到项目里，plugin 自身不注册 Stop hook。"""
+        self.assertFalse((PLUGIN / "hooks" / "hooks.json").exists())
+        source = (PLUGIN / "hooks" / "phase-gate.sh").read_text(encoding="utf-8")
+        self.assertIn("CLAUDE_PROJECT_DIR", source)
+        self.assertNotIn(str(ROOT), source)
 
     def test_old_top_level_implementation_directories_are_absent(self):
         for name in ("plan-standard", "codex-plan-review", "codex-plan-audit"):
