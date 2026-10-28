@@ -148,6 +148,20 @@ python3 /path/to/plugin/scripts/phase-gate.py
 - 不得把 `blocked` 当作 review/audit 通过；
 - 不得伪造 Codex 报告。
 
+### `Error: message must not be empty`
+
+这是 Codex 侧 `turn/start` 的空消息校验，不是 request 文件或 prompt 内容的问题。已确认的触发方式是委托调用走了后台队列：宿主把 Bash 命令转入后台后，message 在传参环节丢失。
+
+规避方式：
+
+- 前台调用 `task`，不要在 Claude Code 里让该命令进入后台，也不要加 `--background`；
+- 用 `--prompt-file` 兜底，把单句指令写进文件再传路径；
+- 注意 `task` 子命令**没有 `--wait`**（只有 `review` / `adversarial-review` 有）；透传未知选项会被当成 prompt 正文。
+
+### `sandbox-exec: sandbox_apply: Operation not permitted`
+
+Codex 的只读沙箱无法在当前外层沙箱内嵌套启动。常见于在另一个沙箱化终端或自动化环境里调用 companion。改到普通终端前台执行，或让宿主以非沙箱方式运行该命令。
+
 只有用户明确选择跳过当前计划时，才能将当前计划记录为 `waived`，并在计划和状态中写明原因。`waived` 只表示当前计划获得明确例外，不表示 Codex 已完成检查。
 
 如果 Codex 能力恢复，应从同一份活动计划继续，不要新建替代计划。

@@ -29,11 +29,25 @@ allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion, Skill
 
     脚本创建 `.claude/temp/codex-review-request-{plan_id}.md` 和 `.claude/temp/codex-plan-context-{plan_id}.md`。context 文件若已存在则保持内容不变，仅在缺失时写入兜底说明，因此先写入需求摘要再运行脚本。脚本只生成 review 输入，不写入计划状态。脚本非零退出时保留原始输出、写入 blocked 状态并停止。
 
-5. 通过 `/codex:rescue --fresh --wait` 只发送包含当前 request 绝对路径的短单行 prompt，例如：`Read exactly /repo/.claude/temp/codex-review-request-<plan_id>.md and perform the requested read-only review.` Codex 必须读取该文件，不得扫描 `.claude/temp/` 猜测 request。具体路径由准备脚本生成并写入 request 文件；不得把长篇 Markdown、shell 命令、`-m` 参数或命令名 token 拼接到 rescue 参数中。Codex 可以读取文件和现有 diff/status，但不得修改、删除或创建文件，不得安装依赖、提交或发布，也不执行验收命令。不要传入 `--model`、`--effort`、provider、API key 或其他 runtime 覆盖参数。
-6. 将 Codex 报告完整展示给用户。若有需要决策的发现，先设 `codex_review_status=needs_input`，通过 `AskUserQuestion` 确认并更新同一计划。
-7. 运行 `/codex:status <job-id>` 获取最终状态；只有 `completed` 且包含完整报告时才继续。`running`、`failed`、`cancelled` 或空输出只能标记为 `blocked`，不得视为 review 通过。
+5. 委托 Codex 执行 review，必须**前台**调用。prompt 只允许这一句模板，路径替换为实际路径：
+
+    ```text
+    Read exactly <request 绝对路径> and perform the requested read-only review.
+    ```
+
+    规则：
+
+    - 只发送上面这一句。不得拼接插件或宿主的操作说明（如「Use one Bash call…」「Do not inspect files yourself…」），不得拼接长篇 Markdown、shell 命令、`-m` 参数或命令名 token。
+    - 不得让该 Bash 调用进入后台：不加 `--background`，不使用后台执行方式。后台队列路径可能丢失 message，表现为 Codex 侧 `message must not be empty`。
+    - `/codex:rescue` 的参数与 companion `task` 的参数不是一回事；`task` 只支持 `--background` / `--write` / `--resume-last|--resume|--fresh` / `--model` / `--effort`，**没有 `--wait`**。不确定时不要透传任何额外参数。
+    - 前台调用可直接用 companion：`node <codex plugin>/scripts/codex-companion.mjs task '<上面的单句>'`；如果宿主仍把命令转入后台或 message 被吞，改用 `--prompt-file` 兜底：先把单句写入 `.claude/temp/codex-prompt-{plan_id}.txt`，再 `task --prompt-file <.claude/temp 下的相对路径>`。
+    - 不要传入 `--model`、`--effort`、provider、API key 或其他 runtime 覆盖参数。
+
+    Codex 可以读取文件和现有 diff/status，但不得修改、删除或创建文件，不得安装依赖、提交或发布，也不执行验收命令。
+6. 判定结果。前台调用没有 job id，直接看返回内容：只有拿到完整报告才继续；出现 `message must not be empty`、`sandbox_apply`、其他 runtime 错误或空输出，一律记 `blocked` 并附原始输出，不得视为 review 通过。只有确实走了后台队列时才用 `/codex:status <job-id>` 查：`running`、`failed`、`cancelled` 或空输出同样只能记 `blocked`。
+7. 将 Codex 报告完整展示给用户。若有需要决策的发现，先设 `codex_review_status=needs_input`，通过 `AskUserQuestion` 确认并更新同一计划。
 8. 将报告、采纳项和不采纳原因追加到同一计划，成功处理后设 `codex_review_status=completed`；用户明确跳过时只能设 `waived` 并记录原因。
-9. 清理临时上下文文件。权限、runtime、Codex 失败或写回失败都必须保留 blocked 状态并停止。
+9. 清理临时上下文文件和 `--prompt-file` 兜底文件。权限、runtime、Codex 失败或写回失败都必须保留 blocked 状态并停止。
 
 ## 安装提示
 

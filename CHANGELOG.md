@@ -2,6 +2,16 @@
 
 本文件记录公开 marketplace/plugin 的用户可见变更。
 
+## [0.4.1] - 2026-10-28
+
+### Fixed
+
+- review/audit 委托改为强制前台调用：不再写 `/codex:rescue --fresh --wait`。实测 companion `task` 子命令不支持 `--wait`（只有 `review` / `adversarial-review` 有），未知选项会被塞进 positionals 变成 prompt 正文。后台队列路径还可能丢失 message，表现为 Codex 侧 `Error: message must not be empty`。
+- prompt 收敛为固定单句模板 `Read exactly <request 绝对路径> and perform the requested read-only review|audit.`，明确禁止把插件/宿主的操作说明、长篇 Markdown 拼进 message（此前 agent 会把「Use one Bash call…」一并传给 Codex）。
+- 结果判定拆开：前台调用没有 job id，直接看返回内容；`message must not be empty`、`sandbox_apply`、其他 runtime 错误或空输出一律记 `blocked`。只有走后台队列时才用 `/codex:status` 轮询。
+- 增加 `--prompt-file` 兜底路径，避免长 prompt 经 shell 或后台传参被吞。
+- `docs/troubleshooting.md` 补充上述两种错误信号的原因与规避方式；新增契约测试断言两份 skill 不再出现 `--fresh --wait`。
+
 ## [0.4.0] - 2026-10-28
 
 ### Added

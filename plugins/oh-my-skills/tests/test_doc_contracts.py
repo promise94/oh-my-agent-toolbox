@@ -69,6 +69,17 @@ class SkillScriptContractTests(unittest.TestCase):
             with self.subTest(reference=name):
                 self.assertTrue((references / name).is_file(), name)
 
+    def test_codex_skills_require_foreground_single_sentence(self):
+        for name in ("codex-plan-review", "codex-plan-audit"):
+            with self.subTest(skill=name):
+                text = (SKILLS / name / "SKILL.md").read_text(encoding="utf-8")
+                # task 子命令不支持 --wait，历史写法 --fresh --wait 会污染 prompt。
+                self.assertNotIn("--fresh --wait", text)
+                self.assertIn("前台", text)
+                self.assertIn("Read exactly", text)
+                self.assertIn("message must not be empty", text)
+                self.assertIn("--prompt-file", text)
+
 
 if __name__ == "__main__":
     unittest.main()
