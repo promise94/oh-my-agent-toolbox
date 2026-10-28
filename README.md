@@ -23,6 +23,7 @@
 - `$codex-plan-review`：通过 Codex plugin 对计划执行独立 review。
 - `$codex-plan-audit`：对完成的实施执行独立 audit。
 - Stop hook：提示当前计划的 review、phase 和 audit 状态；需在项目内执行 bootstrap 后启用，plugin 本身不注册 hook。
+- Rules：`rules/plan-mode.md` 是计划流程硬约束；`bootstrap.py --with-rules` 会把它安装到项目 `.claude/rules/` 并写入 `CLAUDE.md` 的标记块。
 - Agents：提供计划流程的展示元数据。
 - MCP：提供 opt-in 配置模板，不会自动安装、启动或连接 MCP server。
 - Settings：提供项目级复制模板，不会自动覆盖用户全局配置。
@@ -31,7 +32,7 @@ Claude 与 Codex 的职责边界、bootstrap 流程和安全约束见 [`docs/ins
 
 ## 版本
 
-marketplace 与 plugin 当前版本均为 `0.3.0`。修改 skill、hook、agent、MCP 模板或配置契约时，更新 plugin version；修改 marketplace 索引时更新 marketplace metadata version。变更记录见 [`CHANGELOG.md`](CHANGELOG.md)。
+marketplace 与 plugin 当前版本均为 `0.4.0`。修改 skill、hook、agent、MCP 模板或配置契约时，更新 plugin version；修改 marketplace 索引时更新 marketplace metadata version。变更记录见 [`CHANGELOG.md`](CHANGELOG.md)。
 
 ## 验证
 

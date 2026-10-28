@@ -83,6 +83,8 @@ bootstrap 会：
 - 在写入前校验 JSON，并使用原子写入；
 - 失败时报告 `BLOCKED`，不会假装阶段门禁已经启用。
 
+加上 `--with-rules` 时会额外安装计划流程硬约束：把 `rules/plan-mode.md` 复制到 `.claude/rules/plan-mode.md`，并把带注释标记的约束块写入项目 `CLAUDE.md`。重复执行只会更新该标记块，块外内容保持原样；不带参数时不会创建或修改 `CLAUDE.md`。
+
 它不会修改用户全局 Claude 配置，也不会安装 MCP server。
 
 ## Claude 与 Codex 的边界

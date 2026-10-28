@@ -307,5 +307,129 @@ class PhaseStateCommandTests(unittest.TestCase):
         self.assertIn("planning requires Codex review", result.stdout)
 
 
+class PhaseStateMatrixTests(unittest.TestCase):
+    """按状态矩阵钉死 set 的允许/拒绝组合。"""
+
+    def setUp(self):
+        self._directory = tempfile.TemporaryDirectory()
+        self.root = Path(self._directory.name)
+        (self.root / ".claude").mkdir()
+        self.plan = self.root / "demo-plan.md"
+        self.plan.write_text("# plan\n", encoding="utf-8")
+        self.state_path = self.root / ".claude" / "phase_state.json"
+
+    def tearDown(self):
+        self._directory.cleanup()
+
+    def state(self, **overrides):
+        base = {
+            "plan_id": "demo-plan",
+            "plan_path": str(self.plan),
+            "workflow_stage": "planning",
+            "codex_review_status": "pending",
+            "updated_at": "2026-10-28T00:00:00Z",
+        }
+        base.update(overrides)
+        return base
+
+    def execution(self, **overrides):
+        base = self.state(
+            workflow_stage="execution",
+            codex_review_status="completed",
+            current_phase=1,
+            phase_name="实施",
+            phase_status="PASS",
+            audit_status="pending",
+        )
+        base.update(overrides)
+        return base
+
+    def run_set(self, state, fields):
+        self.state_path.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "set", *[item for field in fields for item in ("--field", field)]],
+            cwd=self.root,
+            env=isolated_env(self.root),
+            text=True,
+            capture_output=True,
+        )
+
+    def test_set_matrix(self):
+        terminal = ["terminal_at=2026-10-28T00:00:00Z", "terminal_reason=stop"]
+        cases = [
+            ("planning 更新备注", self.state(), ["codex_review_note=ok"], 0, None),
+            ("review 未处置不能切 execution", self.state(), ["workflow_stage=execution"], 2, "codex_review_status"),
+            (
+                "review completed 后可切 execution",
+                self.state(codex_review_status="completed"),
+                ["workflow_stage=execution", "current_phase=1", "phase_name=实施",
+                 "phase_status=in_progress", "audit_status=pending"],
+                0,
+                None,
+            ),
+            ("execution 缺 audit_status", self.execution(audit_status=None), ["phase_status=PASS"], 2, "audit_status"),
+            ("execution 非法 phase_status", self.execution(), ["phase_status=done"], 2, "invalid phase_status"),
+            ("current_phase 必须正整数", self.execution(), ["current_phase=0"], 2, "current_phase"),
+            ("completed 缺 terminal_at", self.execution(), ["workflow_stage=completed"], 2, "terminal_at"),
+            (
+                "completed 缺 audit 处置",
+                self.execution(audit_status="pending"),
+                ["workflow_stage=completed", *terminal],
+                2,
+                "audit_status",
+            ),
+            ("completed 合规", self.execution(audit_status="waived"), ["workflow_stage=completed", *terminal], 0, None),
+            ("cancelled 只需终态字段", self.execution(), ["workflow_stage=cancelled", *terminal], 0, None),
+            (
+                "cancelled 缺 terminal_reason",
+                self.execution(),
+                ["workflow_stage=cancelled", "terminal_at=2026-10-28T00:00:00Z"],
+                2,
+                "terminal_reason",
+            ),
+            (
+                "plan_path 不存在",
+                self.state(plan_path=str(self.root / "gone.md")),
+                ["codex_review_note=x"],
+                2,
+                "plan_path",
+            ),
+            ("未知字段", self.state(), ["surprise=1"], 2, "unsupported field"),
+        ]
+        for name, initial, fields, expected, needle in cases:
+            with self.subTest(case=name):
+                result = self.run_set(initial, fields)
+                self.assertEqual(result.returncode, expected, f"{name}: {result.stdout}{result.stderr}")
+                if needle:
+                    self.assertIn(needle, result.stdout, name)
+                if expected != 0:
+                    stored = json.loads(self.state_path.read_text(encoding="utf-8"))
+                    self.assertEqual(stored["updated_at"], initial["updated_at"], f"{name}: 拒绝时不应写入")
+
+    def test_start_matrix(self):
+        cases = [
+            ("无状态可创建", None, 0, None),
+            ("已有 planning", self.state(), 2, "active plan already exists"),
+            ("已有 execution", self.execution(), 2, "active plan already exists"),
+            ("终态未归档", self.state(workflow_stage="completed"), 2, "run archive first"),
+        ]
+        for name, initial, expected, needle in cases:
+            with self.subTest(case=name):
+                if initial is None:
+                    self.state_path.unlink(missing_ok=True)
+                else:
+                    self.state_path.write_text(json.dumps(initial, ensure_ascii=False), encoding="utf-8")
+                result = subprocess.run(
+                    [sys.executable, str(SCRIPT), "start", "--plan", str(self.plan)],
+                    cwd=self.root,
+                    env=isolated_env(self.root),
+                    text=True,
+                    capture_output=True,
+                )
+                self.assertEqual(result.returncode, expected, f"{name}: {result.stdout}{result.stderr}")
+                if needle:
+                    self.assertIn(needle, result.stdout, name)
+
+
 if __name__ == "__main__":
     unittest.main()

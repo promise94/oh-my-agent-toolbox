@@ -9,6 +9,8 @@ metadata:
 
 本 skill 面向需要持久化决策、分阶段执行或跨会话恢复的工作。计划是持续更新的执行记录；实施、验证、Codex review 和最终 audit 必须始终与同一份计划对账。
 
+本仓库的**计划流程硬约束**在 `rules/plan-mode.md`（`--with-rules` 安装后位于项目 `.claude/rules/plan-mode.md`）。开始任何计划工作前先读它；它规定状态写入方式、禁止伪造 review/audit、终态条件和单活动计划约束，与本 skill 冲突时以它为准。
+
 ## 输出语言
 
 - 计划正文、章节标题、评审报告和审计报告默认使用中文。
@@ -43,6 +45,8 @@ bootstrap 会将本 skill 的 `phase-gate.sh` 安装到 `$CLAUDE_PROJECT_DIR/.cl
 ```
 
 已有配置和 Stop hook 不覆盖、不重复添加。settings JSON 非法、结构冲突或 hook 安装失败时记录为 `BLOCKED`，不要假装门禁已启用。
+
+加 `--with-rules` 时还会把 `rules/plan-mode.md` 复制到 `.claude/rules/plan-mode.md`，并把带注释标记的约束块幂等写入项目 `CLAUDE.md`（重复执行不会重复插入，块内内容会被更新，块外内容保持原样）。不带该参数时不写 `CLAUDE.md`。
 
 ## 开始、恢复与路径
 

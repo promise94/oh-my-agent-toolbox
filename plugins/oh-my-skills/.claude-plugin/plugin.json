@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent-toolbox",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Reusable Claude and Codex skills, hooks, agents, MCP templates, and project configuration helpers.",
   "author": {
     "name": "oh-my-agent-toolbox maintainers"

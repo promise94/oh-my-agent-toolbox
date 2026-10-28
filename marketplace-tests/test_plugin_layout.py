@@ -14,6 +14,7 @@ class PluginLayoutTests(unittest.TestCase):
             PLUGIN / "skills/codex-plan-audit/SKILL.md",
             PLUGIN / "agents/plan-standard.md",
             PLUGIN / "hooks/phase-gate.sh",
+            PLUGIN / "rules/plan-mode.md",
             PLUGIN / "scripts/bootstrap.py",
             PLUGIN / "scripts/phase-gate.py",
             PLUGIN / "scripts/phase-state.py",

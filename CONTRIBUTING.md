@@ -6,6 +6,7 @@
 - `plugins/<plugin>/skills/<skill>/SKILL.md`：可调用 skill；每个 skill 使用独立目录。
 - `plugins/<plugin>/scripts/`：可测试的实现脚本。
 - `plugins/<plugin>/hooks/`：bootstrap 安装到项目 `.claude/hooks/` 的 hook 源文件；plugin 本身不注册 Stop hook，门禁只在执行过 bootstrap 的项目中生效。
+- `plugins/<plugin>/rules/`：可选的硬约束规则文件，由 `bootstrap.py --with-rules` 安装到项目 `.claude/rules/` 并写入 `CLAUDE.md` 标记块。
 - `plugins/<plugin>/agents/`：agent 定义或展示元数据。
 - `plugins/<plugin>/config-templates/`：不含凭证的配置模板。
 - `plugins/<plugin>/tests/`：不依赖网络和用户配置的测试。

@@ -39,6 +39,39 @@ class IntegrationScriptTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_bootstrap_with_rules_upserts_claude_md_block(self):
+        directory, root, _ = self.make_root()
+        try:
+            claude_md = root / "CLAUDE.md"
+            claude_md.write_text("# 项目说明\n\n已有内容，不得丢失。\n", encoding="utf-8")
+            command = [sys.executable, str(BOOTSTRAP), "--root", str(root), "--with-rules"]
+            first = subprocess.run(command, text=True, capture_output=True)
+            second = subprocess.run(command, text=True, capture_output=True)
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+            self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+            text = claude_md.read_text(encoding="utf-8")
+            self.assertIn("已有内容，不得丢失。", text)
+            self.assertEqual(text.count("oh-my-agent-toolbox:plan-rules:start"), 1)
+            self.assertEqual(text.count("oh-my-agent-toolbox:plan-rules:end"), 1)
+            self.assertIn("状态只经", text)
+            self.assertTrue((root / ".claude" / "rules" / "plan-mode.md").is_file())
+        finally:
+            directory.cleanup()
+
+    def test_bootstrap_without_rules_does_not_create_claude_md(self):
+        directory, root, _ = self.make_root()
+        try:
+            result = subprocess.run(
+                [sys.executable, str(BOOTSTRAP), "--root", str(root)],
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertFalse((root / "CLAUDE.md").exists())
+            self.assertFalse((root / ".claude" / "rules").exists())
+        finally:
+            directory.cleanup()
+
     def test_review_rejects_paths_outside_temp(self):
         directory, root, plan = self.make_root()
         try:

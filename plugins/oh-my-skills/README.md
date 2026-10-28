@@ -30,6 +30,7 @@
 - `$codex-plan-review`：通过 Codex plugin 对计划执行独立 review。
 - `$codex-plan-audit`：对完成的实施执行独立 audit。
 - Stop hook：提示当前计划的 review、phase 和 audit 状态；需在项目内执行 bootstrap 后启用，plugin 本身不注册 hook。
+- Rules：`rules/plan-mode.md` 是计划流程硬约束；`bootstrap.py --with-rules` 会把它安装到项目 `.claude/rules/` 并写入 `CLAUDE.md` 的标记块。
 - Agents：提供计划流程的展示元数据。
 - MCP：`config-templates/mcp.example.json` 仅为 opt-in 示例，不会自动安装、启动或连接 MCP server。
 - Settings：`config-templates/settings.local.example.json` 是复制模板，不会自动覆盖用户配置。

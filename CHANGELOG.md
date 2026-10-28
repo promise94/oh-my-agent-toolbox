@@ -2,6 +2,14 @@
 
 本文件记录公开 marketplace/plugin 的用户可见变更。
 
+## [0.4.0] - 2026-10-28
+
+### Added
+
+- `rules/plan-mode.md`：计划流程硬约束（状态只经脚本写入、禁止伪造 review/audit、终态条件、单活动计划、计划可执行性、不越界），`plan-standard` 要求开始计划前先读它。
+- `bootstrap.py --with-rules`：把规则文件安装到项目 `.claude/rules/plan-mode.md`，并把带注释标记的约束块幂等写入项目 `CLAUDE.md`；重复执行只更新标记块，块外内容不动，不带参数时不创建 `CLAUDE.md`。
+- 状态矩阵测试：按状态组合覆盖 `phase-state.py set` 的允许/拒绝路径（review 未处置切 execution、缺 audit、非法 phase_status、`current_phase=0`、completed 缺 terminal/audit、cancelled 只需终态字段、plan_path 失效、未知字段），并断言被拒绝时状态文件不被改写。
+
 ## [0.3.0] - 2026-10-28
 
 ### Added
