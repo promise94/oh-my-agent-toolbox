@@ -47,19 +47,20 @@ def archive(root: Path) -> int:
             return fail("completed plan must have codex_review_status=completed or waived")
         if state.get("audit_status") not in {"completed", "waived"}:
             return fail("completed plan must have audit_status=completed or waived")
+    # 取消/放弃计划可能发生在 review 之前，只要求终态字段，不强制 review/audit 处置。
     if stage in {"cancelled", "abandoned"}:
         if not state.get("terminal_at") or not state.get("terminal_reason"):
             return fail(f"{stage} plan must have terminal_at and terminal_reason")
-        if state.get("codex_review_status") not in {"completed", "waived"}:
-            return fail(f"{stage} plan must have codex_review_status=completed or waived")
-        if state.get("audit_status") not in {"completed", "waived"}:
-            return fail(f"{stage} plan must have audit_status=completed or waived")
 
     history_dir = root / ".claude" / "plan-history"
     history_dir.mkdir(parents=True, exist_ok=True)
     history_path = history_dir / f"{plan_id}.json"
     if history_path.exists():
-        return fail(f"archive already exists: {history_path}")
+        # 不覆盖已有历史：同 plan_id 再次归档时追加序号。
+        index = 2
+        while (history_dir / f"{plan_id}-{index}.json").exists():
+            index += 1
+        history_path = history_dir / f"{plan_id}-{index}.json"
 
     try:
         history_path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

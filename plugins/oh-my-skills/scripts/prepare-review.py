@@ -36,16 +36,9 @@ REQUEST_TEMPLATE = """# Codex 计划评审请求
 
 可以读取文件和现有 diff/status。不得修改、删除或创建文件，不得安装依赖、提交或发布，不需要执行验收命令。不要覆盖 model、provider、effort 或其他 runtime 配置。无法读取的信息报告“未读取”，不要发送空工具消息。
 
-## 检查项
+## 任务与输出
 
-1. 每项需求是否对应明确阶段和文件级变更。
-2. 验收标准是否可执行、约束是否可衡量。
-3. 阶段依赖、错误处理、回滚、边界和文档是否完整。
-4. 是否存在范围漂移、未记录假设或与现有代码冲突。
-
-## 输出
-
-按 `{review_format_path}` 的格式输出完整报告。不要实施修复，不要重写计划。
+完整执行 `{review_format_path}` 中的任务清单、检查清单和输出格式。该文件是 review 任务和输出格式的唯一来源；本文件只提供输入路径和只读边界。不要实施修复，不要重写计划。
 """
 
 
@@ -81,16 +74,20 @@ def main() -> int:
         ),
         encoding="utf-8",
     )
-    context.write_text(
-        "# Codex 计划上下文\n\n"
-        f"- 计划文件：`{plan}`\n"
-        "- 目标：独立检查计划是否自包含、可执行、可验证。\n"
-        "- 主 agent 结论：未提供；请独立读取计划和相关代码。\n"
-        "- 本文件不包含 shell 命令或 runtime 配置。\n",
-        encoding="utf-8",
-    )
+    if context.is_file() and context.read_text(encoding="utf-8").strip():
+        context_note = f"kept existing review context at {context}"
+    else:
+        context.write_text(
+            "# Codex 计划上下文（兜底）\n\n"
+            f"- 计划文件：`{plan}`\n"
+            "- 需求摘要：未提供。主 agent 应在运行本脚本前写入 5-8 句需求摘要，覆盖目标、约束、Phase 0 决策和假设。\n"
+            "- 主 agent 结论：未提供；请独立读取计划和相关代码。\n"
+            "- 本文件不包含 shell 命令或 runtime 配置。\n",
+            encoding="utf-8",
+        )
+        context_note = f"wrote fallback review context to {context}"
     print(f"PASS: wrote review request to {request}")
-    print(f"PASS: wrote review context to {context}")
+    print(f"PASS: {context_note}")
     return 0
 
 

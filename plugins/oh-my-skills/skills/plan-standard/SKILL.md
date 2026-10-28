@@ -111,7 +111,7 @@ bootstrap 会将本 skill 的 `phase-gate.sh` 安装到 `$CLAUDE_PROJECT_DIR/.cl
 
 review 使用 `${CLAUDE_PLUGIN_ROOT}/skills/plan-standard/references/review-subagent-prompt.md`，audit 使用 `${CLAUDE_PLUGIN_ROOT}/skills/plan-standard/references/audit-subagent-prompt.md`。Claude 先在本地运行计划中的验收命令，再运行对应 skill 提供的准备脚本，将不含 shell 命令原文、`-m` 参数或命令名 token 的结果摘要写入 `.claude/temp/`。准备脚本必须将 request/context/summary 写入仓库 `.claude/temp/`，并在 request 中标记当前 request 是唯一输入。随后只向 `/codex:rescue` 发送包含该 request 绝对路径的短单行读取请求；不得让 Codex 扫描临时目录猜测文件，也不得把长篇 Markdown 直接拼接到 rescue 参数中。Codex 可以读取文件、查看现有 diff/status 和审计摘要，但不得修改、删除或创建文件，不得安装依赖、提交或发布，也不需要运行测试；如果某项信息无法读取，报告“未读取”，不要发送空命令。Codex 任务必须有超时和状态轮询：`running`、`failed`、`cancelled` 或空输出只能标记为 `blocked`，不得视为 audit 通过。报告完成后清理临时文件；waiver 时保留阻塞证据并记录清理结果。不得向 Codex 传递主 agent 的预期结论。
 
-`phase-gate.py` 是严格校验器，返回非零表示当前状态不允许继续；`.claude/hooks/phase-gate.sh` 是 Stop hook 提示器，只报告状态，不修改计划或自动推进阶段。
+`phase-gate.py` 是严格校验器，返回非零表示当前状态不允许继续；`.claude/hooks/phase-gate.sh` 是 Stop hook 提示器，只报告状态，不修改计划或自动推进阶段。退出码含义：`0` 允许继续，`1` 状态未满足（等待 review、phase 或 audit），`2` 状态非法或缺失（需要先修正 `.claude/phase_state.json`）。
 
 ## 阶段门禁与归档
 
@@ -127,4 +127,4 @@ Claude Stop hook 会自动提示未完成的 review、phase gate 或 audit，但
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/phase-state.py" archive
 ```
 
-归档成功后 `.claude/phase_state.json` 必须不存在，历史状态保留在 `.claude/plan-history/`，且不得覆盖已有历史。
+归档成功后 `.claude/phase_state.json` 必须不存在，历史状态保留在 `.claude/plan-history/`，且不得覆盖已有历史：同一 `plan_id` 再次归档时写入 `<plan_id>-2.json`、`<plan_id>-3.json`，不覆盖旧文件。

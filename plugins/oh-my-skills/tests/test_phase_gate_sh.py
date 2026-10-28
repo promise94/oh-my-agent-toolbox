@@ -56,7 +56,7 @@ class PhaseGateShellTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertIn("audit_status", result.stdout)
 
-
+    def test_execution_in_progress_phase_is_reported(self):
         result = self.run_hook(
             '{"workflow_stage":"execution","current_phase":1,"phase_name":"build",'
             '"phase_status":"in_progress","audit_status":"pending"}'

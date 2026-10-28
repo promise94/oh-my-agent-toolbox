@@ -6,10 +6,10 @@ import os
 import sys
 from pathlib import Path
 
-REVIEW_STATUSES = {"pending", "needs_input", "blocked", "waived", "completed"}
-AUDIT_STATUSES = {"pending", "needs_input", "blocked", "waived", "completed"}
+DISPOSITION_STATUSES = {"pending", "needs_input", "blocked", "waived", "completed"}
 PHASE_STATUSES = {"in_progress", "PASS", "FAIL", "DEVIATION", "BLOCKED"}
 TERMINAL_STAGES = {"completed", "cancelled", "abandoned"}
+DISPOSED_STATUSES = {"completed", "waived"}
 
 
 def blocked(message: str, exit_code: int = 2) -> int:
@@ -54,31 +54,28 @@ def main() -> int:
 
     if stage == "planning":
         review_status = state.get("codex_review_status", "pending")
-        if review_status not in REVIEW_STATUSES:
+        if review_status not in DISPOSITION_STATUSES:
             return blocked(f"invalid codex_review_status ({review_status})")
         print(f"BLOCKED: planning requires Codex review or waiver (codex_review_status={review_status})")
         return 1
 
-    review_status = state.get("codex_review_status")
-    if review_status not in {"completed", "waived"}:
-        return blocked("execution requires codex_review_status=completed or waived")
-
+    # 取消/放弃的计划可能发生在 review 之前，只需要终态字段，不要求 review/audit 完成。
     if stage in {"cancelled", "abandoned"}:
         if not state.get("terminal_at") or not state.get("terminal_reason"):
             return blocked(f"{stage} plan must have terminal_at and terminal_reason")
-        if state.get("codex_review_status") not in {"completed", "waived"}:
-            return blocked(f"{stage} plan must have codex_review_status=completed or waived")
-        if state.get("audit_status") not in {"completed", "waived"}:
-            return blocked(f"{stage} plan must have audit_status=completed or waived")
         print(f"PASS: plan is terminal ({stage}); archive before starting another plan")
         return 0
+
+    review_status = state.get("codex_review_status")
+    if review_status not in DISPOSED_STATUSES:
+        return blocked("execution requires codex_review_status=completed or waived")
 
     if stage == "completed":
         if not state.get("terminal_at") or not state.get("terminal_reason"):
             return blocked("completed plan must have terminal_at and terminal_reason")
         if phase_status != "PASS":
             return blocked("completed plan must have phase_status=PASS")
-        if state.get("audit_status") not in {"completed", "waived"}:
+        if state.get("audit_status") not in DISPOSED_STATUSES:
             return blocked("completed plan must have audit_status=completed or waived")
         print("PASS: plan completed; archive before starting another plan")
         return 0
@@ -90,7 +87,7 @@ def main() -> int:
     if phase_status not in PHASE_STATUSES:
         return blocked(f"invalid phase_status ({phase_status})")
     audit_status = state.get("audit_status")
-    if not isinstance(audit_status, str) or audit_status not in AUDIT_STATUSES:
+    if not isinstance(audit_status, str) or audit_status not in DISPOSITION_STATUSES:
         return blocked(f"invalid audit_status ({audit_status})")
 
     if phase_status == "PASS":

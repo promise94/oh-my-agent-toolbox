@@ -103,6 +103,64 @@ class IntegrationScriptTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_review_keeps_existing_context(self):
+        directory, root, plan = self.make_root()
+        try:
+            request = root / ".claude/temp/review-request.md"
+            context = root / ".claude/temp/review-context.md"
+            context.write_text("# 需求摘要\n\n目标：验证需求摘要不会被脚本覆盖。\n", encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, str(REVIEW), "--root", str(root), "--plan", str(plan),
+                 "--request", str(request), "--context", str(context)],
+                text=True, capture_output=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("kept existing", result.stdout)
+            self.assertIn("目标：验证需求摘要不会被脚本覆盖", context.read_text(encoding="utf-8"))
+        finally:
+            directory.cleanup()
+
+    def test_review_writes_fallback_context_when_missing(self):
+        directory, root, plan = self.make_root()
+        try:
+            request = root / ".claude/temp/review-request.md"
+            context = root / ".claude/temp/review-context.md"
+            result = subprocess.run(
+                [sys.executable, str(REVIEW), "--root", str(root), "--plan", str(plan),
+                 "--request", str(request), "--context", str(context)],
+                text=True, capture_output=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("fallback", result.stdout)
+            self.assertIn("需求摘要：未提供", context.read_text(encoding="utf-8"))
+        finally:
+            directory.cleanup()
+
+    def test_audit_summary_reconciles_plan_phases(self):
+        directory, root, plan = self.make_root()
+        try:
+            (root / "mod.py").write_text("x = 1\n", encoding="utf-8")
+            plan.write_text(
+                "# plan\n\n## 阶段 1：接口\n\n| 修改 | `mod.py` | 说明 |\n\n"
+                "## 阶段 2：收尾\n\n| 新增 | `missing.py` | 说明 |\n",
+                encoding="utf-8",
+            )
+            request = root / ".claude/temp/audit-request.md"
+            summary = root / ".claude/temp/summary.md"
+            result = subprocess.run(
+                [sys.executable, str(AUDIT), "--root", str(root), "--plan", str(plan),
+                 "--request", str(request), "--summary", str(summary)],
+                text=True, capture_output=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            summary_text = summary.read_text(encoding="utf-8")
+            self.assertIn("### 阶段 1：接口", summary_text)
+            self.assertIn("### 阶段 2：收尾", summary_text)
+            self.assertIn("| `mod.py` | 是 |", summary_text)
+            self.assertIn("| `missing.py` | 否 |", summary_text)
+        finally:
+            directory.cleanup()
+
     def test_audit_rejects_summary_outside_temp(self):
         directory, root, plan = self.make_root()
         try:
@@ -114,6 +172,44 @@ class IntegrationScriptTests(unittest.TestCase):
             )
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("summary must be inside", result.stderr)
+        finally:
+            directory.cleanup()
+
+    def test_audit_missing_baseline_leaves_no_partial_output(self):
+        directory, root, plan = self.make_root()
+        try:
+            request = root / ".claude/temp/audit-request.md"
+            summary = root / ".claude/temp/summary.md"
+            result = subprocess.run(
+                [sys.executable, str(AUDIT), "--root", str(root), "--plan", str(plan),
+                 "--request", str(request), "--summary", str(summary),
+                 "--baseline", str(root / "missing.md")],
+                text=True, capture_output=True,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("baseline summary does not exist", result.stderr)
+            self.assertFalse(request.exists(), "request must not be written before validation")
+            self.assertFalse(summary.exists(), "summary must not be written before validation")
+        finally:
+            directory.cleanup()
+
+    def test_audit_request_is_project_agnostic(self):
+        directory, root, plan = self.make_root()
+        try:
+            request = root / ".claude/temp/audit-request.md"
+            summary = root / ".claude/temp/summary.md"
+            result = subprocess.run(
+                [sys.executable, str(AUDIT), "--root", str(root), "--plan", str(plan),
+                 "--request", str(request), "--summary", str(summary)],
+                text=True, capture_output=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            request_text = request.read_text(encoding="utf-8")
+            self.assertNotIn("CLAUDE_PLUGIN_ROOT", request_text)
+            format_doc = ROOT / "skills" / "plan-standard" / "references" / "audit-subagent-prompt.md"
+            self.assertTrue(format_doc.is_file(), format_doc)
+            self.assertIn(str(format_doc.resolve()), request_text)
+            self.assertIn(str(plan), request_text)
         finally:
             directory.cleanup()
 

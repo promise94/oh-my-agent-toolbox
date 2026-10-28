@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -9,6 +10,11 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "phase-state.py"
 
 
+def isolated_env(root: Path) -> dict[str, str]:
+    """Keep CLAUDE_PROJECT_DIR from leaking the real repository into the test."""
+    return dict(os.environ, CLAUDE_PROJECT_DIR=str(root))
+
+
 class PhaseStateTests(unittest.TestCase):
     def run_archive(self, state):
         directory = tempfile.TemporaryDirectory()
@@ -17,7 +23,11 @@ class PhaseStateTests(unittest.TestCase):
         state_path.parent.mkdir()
         state_path.write_text(json.dumps(state), encoding="utf-8")
         result = subprocess.run(
-            [sys.executable, str(SCRIPT), "archive"], cwd=root, text=True, capture_output=True
+            [sys.executable, str(SCRIPT), "archive"],
+            cwd=root,
+            env=isolated_env(root),
+            text=True,
+            capture_output=True,
         )
         return directory, root, result
 
@@ -97,16 +107,16 @@ class PhaseStateTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
-    def test_abandoned_requires_dispositions(self):
-        directory, _, result = self.run_archive({
+    def test_abandoned_archives_without_review_or_audit(self):
+        directory, root, result = self.run_archive({
             "plan_id": "demo",
             "workflow_stage": "abandoned",
             "terminal_at": "2026-10-27T00:00:00Z",
             "terminal_reason": "abandoned",
         })
         try:
-            self.assertEqual(result.returncode, 2)
-            self.assertIn("codex_review_status", result.stdout)
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertTrue((root / ".claude" / "plan-history" / "demo.json").exists())
         finally:
             directory.cleanup()
 
@@ -117,7 +127,11 @@ class PhaseStateTests(unittest.TestCase):
         state_path.parent.mkdir()
         state_path.write_text("{", encoding="utf-8")
         result = subprocess.run(
-            [sys.executable, str(SCRIPT), "archive"], cwd=root, text=True, capture_output=True
+            [sys.executable, str(SCRIPT), "archive"],
+            cwd=root,
+            env=isolated_env(root),
+            text=True,
+            capture_output=True,
         )
         try:
             self.assertEqual(result.returncode, 2)
@@ -125,7 +139,7 @@ class PhaseStateTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
-
+    def test_archive_appends_suffix_for_duplicate_history(self):
         directory, root, first = self.run_archive({
             "plan_id": "demo",
             "workflow_stage": "completed",
@@ -148,10 +162,16 @@ class PhaseStateTests(unittest.TestCase):
                 "terminal_reason": "waived",
             }), encoding="utf-8")
             result = subprocess.run(
-                [sys.executable, str(SCRIPT), "archive"], cwd=root, text=True, capture_output=True
+                [sys.executable, str(SCRIPT), "archive"],
+                cwd=root,
+                env=isolated_env(root),
+                text=True,
+                capture_output=True,
             )
-            self.assertEqual(result.returncode, 2)
-            self.assertIn("archive already exists", result.stdout)
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertTrue((root / ".claude" / "plan-history" / "demo.json").exists())
+            self.assertTrue((root / ".claude" / "plan-history" / "demo-2.json").exists())
+            self.assertFalse((root / ".claude" / "phase_state.json").exists())
         finally:
             directory.cleanup()
 

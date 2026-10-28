@@ -85,15 +85,20 @@ class PhaseGateTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("plan_path", result.stdout)
 
-    def test_cancelled_requires_dispositions(self):
+    def test_cancelled_passes_with_terminal_fields(self):
         result = self.run_gate({
             "plan_id": "demo",
             "workflow_stage": "cancelled",
             "terminal_at": "2026-10-27T00:00:00Z",
             "terminal_reason": "cancelled",
         })
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("PASS: plan is terminal", result.stdout)
+
+    def test_cancelled_requires_terminal_fields(self):
+        result = self.run_gate({"plan_id": "demo", "workflow_stage": "cancelled"})
         self.assertEqual(result.returncode, 2)
-        self.assertIn("codex_review_status", result.stdout)
+        self.assertIn("terminal_at", result.stdout)
 
     def test_non_string_status_is_blocked(self):
         result = self.run_gate({
@@ -108,7 +113,7 @@ class PhaseGateTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("audit_status", result.stdout)
 
-
+    def test_completed_requires_audit_disposition(self):
         result = self.run_gate({
             "plan_id": "demo",
             "workflow_stage": "completed",

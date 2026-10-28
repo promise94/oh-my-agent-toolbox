@@ -14,7 +14,21 @@ allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion, Skill
 1. 读取 `$CLAUDE_PROJECT_DIR/.claude/phase_state.json`，或验证用户提供的绝对计划路径；不从最近文件猜测计划。
 2. 检查 Codex plugin 和 `/codex:rescue` 是否可用；不可用时将 `codex_review_status=blocked`、写入 `codex_review_note`，并询问用户是否仅为当前计划 waiver。
 3. 执行 `/codex:setup` 一次。setup 失败时保留输出、写入 blocked 状态并停止；不得伪造 review 结果。
-4. 运行 `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/prepare-review.py"`，由脚本创建 `.claude/temp/codex-review-request-{plan_id}.md` 和 `.claude/temp/codex-plan-context-{plan_id}.md`。脚本只生成审计输入，不写入计划状态。
+4. 运行准备脚本生成 review 输入。运行前先自己写需求摘要：把 5-8 句需求上下文写入 `--context` 指定的文件，覆盖目标、约束、Phase 0 已定决策、假设和范围外事项；不要写入主 agent 的预期结论或疑似发现。脚本不会覆盖已存在的 context，只在文件缺失或为空时写入兜底说明。
+
+   脚本四个参数全部必填，`--root` 必须是仓库根目录，`--request` 和 `--context` 必须落在 `.claude/temp/` 内（越界会被拒绝）：
+
+    ```bash
+    PLAN_ID="$(basename "$PLAN_PATH" .md)"
+    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/prepare-review.py" \
+      --root "$CLAUDE_PROJECT_DIR" \
+      --plan "$PLAN_PATH" \
+      --request "$CLAUDE_PROJECT_DIR/.claude/temp/codex-review-request-${PLAN_ID}.md" \
+      --context "$CLAUDE_PROJECT_DIR/.claude/temp/codex-plan-context-${PLAN_ID}.md"
+    ```
+
+    脚本创建 `.claude/temp/codex-review-request-{plan_id}.md` 和 `.claude/temp/codex-plan-context-{plan_id}.md`。context 文件若已存在则保持内容不变，仅在缺失时写入兜底说明，因此先写入需求摘要再运行脚本。脚本只生成 review 输入，不写入计划状态。脚本非零退出时保留原始输出、写入 blocked 状态并停止。
+
 5. 通过 `/codex:rescue --fresh --wait` 只发送包含当前 request 绝对路径的短单行 prompt，例如：`Read exactly /repo/.claude/temp/codex-review-request-<plan_id>.md and perform the requested read-only review.` Codex 必须读取该文件，不得扫描 `.claude/temp/` 猜测 request。具体路径由准备脚本生成并写入 request 文件；不得把长篇 Markdown、shell 命令、`-m` 参数或命令名 token 拼接到 rescue 参数中。Codex 可以读取文件和现有 diff/status，但不得修改、删除或创建文件，不得安装依赖、提交或发布，也不执行验收命令。不要传入 `--model`、`--effort`、provider、API key 或其他 runtime 覆盖参数。
 6. 将 Codex 报告完整展示给用户。若有需要决策的发现，先设 `codex_review_status=needs_input`，通过 `AskUserQuestion` 确认并更新同一计划。
 7. 运行 `/codex:status <job-id>` 获取最终状态；只有 `completed` 且包含完整报告时才继续。`running`、`failed`、`cancelled` 或空输出只能标记为 `blocked`，不得视为 review 通过。
