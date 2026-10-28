@@ -1,9 +1,9 @@
 {
-  "name": "oh-my-skills",
+  "name": "oh-my-agent-toolbox",
   "version": "0.1.0",
-  "description": "Reusable Claude skills, hooks, agents, MCP templates, and project configuration helpers.",
+  "description": "Reusable Claude and Codex skills, hooks, agents, MCP templates, and project configuration helpers.",
   "author": {
-    "name": "oh-my-skills maintainers"
+    "name": "oh-my-agent-toolbox maintainers"
   },
   "repository": "https://gitee.com/promise9495/oh-my-skills",
   "license": "MIT",

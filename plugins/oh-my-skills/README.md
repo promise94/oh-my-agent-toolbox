@@ -1,6 +1,6 @@
-# oh-my-skills
+# oh-my-agent-toolbox
 
-可通过 Claude marketplace 安装的通用 skills、hooks、agents、MCP 配置模板和项目流程工具。
+可通过 Claude marketplace 安装的通用 skills、hooks、agents、MCP 配置模板和项目流程工具，兼容 Claude 与 Codex 工作流。
 
 ## 安装
 
@@ -19,7 +19,7 @@
 然后安装 plugin：
 
 ```text
-/plugin install oh-my-skills@oh-my-skills
+/plugin install oh-my-agent-toolbox@oh-my-skills
 ```
 
 本仓库当前只提供 marketplace/plugin 结构和本地实现，未执行远端发布。

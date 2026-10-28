@@ -1,12 +1,12 @@
 # Marketplace 维护
 
-该仓库通过 `.claude-plugin/marketplace.json` 暴露 marketplace，通过 `plugins/oh-my-skills/.claude-plugin/plugin.json` 暴露 plugin。
+该仓库通过 `.claude-plugin/marketplace.json` 暴露 marketplace，通过 `plugins/oh-my-skills/.claude-plugin/plugin.json` 暴露 `oh-my-agent-toolbox` plugin。
 
 ## 安装
 
 ```text
 /plugin marketplace add /absolute/path/to/oh-my-skills
-/plugin install oh-my-skills@oh-my-skills
+/plugin install oh-my-agent-toolbox@oh-my-skills
 ```
 
 ## 版本

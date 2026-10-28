@@ -2,7 +2,7 @@
 
 ## 目录约定
 
-- `plugins/<plugin>/.claude-plugin/plugin.json`：plugin 元数据。
+- `plugins/<plugin>/.claude-plugin/plugin.json`：plugin 元数据；本仓库的公开 plugin 名称是 `oh-my-agent-toolbox`。
 - `plugins/<plugin>/skills/<skill>/SKILL.md`：可调用 skill；每个 skill 使用独立目录。
 - `plugins/<plugin>/scripts/`：可测试的实现脚本。
 - `plugins/<plugin>/hooks/hooks.json`：plugin hook 声明；命令使用 `${CLAUDE_PLUGIN_ROOT}`。

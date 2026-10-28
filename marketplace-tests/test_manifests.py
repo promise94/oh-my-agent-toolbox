@@ -14,6 +14,8 @@ class MarketplaceTests(unittest.TestCase):
     def test_manifests_are_valid_and_point_inside_repo(self):
         marketplace = json.loads(MARKETPLACE.read_text(encoding="utf-8"))
         plugin = json.loads((PLUGIN / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
+        self.assertEqual(marketplace["plugins"][0]["name"], "oh-my-agent-toolbox")
+        self.assertEqual(plugin["name"], "oh-my-agent-toolbox")
         self.assertEqual(marketplace["plugins"][0]["source"], "./plugins/oh-my-skills")
         self.assertTrue((ROOT / marketplace["plugins"][0]["source"]).is_dir())
         for value in (marketplace, plugin):
