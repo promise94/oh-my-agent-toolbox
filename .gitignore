@@ -219,5 +219,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 .claude/phase_state.json
+.claude/plan-history
 .claude/plans
 .claude/temp
+.workbuddy
