@@ -30,7 +30,7 @@ REQUEST_TEMPLATE = """# Codex 最终审计请求
 - 实施摘要：`{summary_path}`
 - 原始工作树摘要：`{baseline_path}`
 - 项目规则：仓库中的 `CLAUDE.md`、`AGENTS.md`（如存在）
-- 相关文件：`plan-standard/`、`codex-plan-review/`、`codex-plan-audit/`
+- 相关文件：`plugins/oh-my-skills/`、`.claude-plugin/`
 
 ## 只读边界
 

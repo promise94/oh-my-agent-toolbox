@@ -2,6 +2,7 @@
 """Check whether the active Claude plan may proceed."""
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -17,7 +18,8 @@ def blocked(message: str, exit_code: int = 2) -> int:
 
 
 def main() -> int:
-    state_path = Path.cwd() / ".claude" / "phase_state.json"
+    root = Path(os.environ.get("CLAUDE_PROJECT_DIR", Path.cwd())).resolve()
+    state_path = root / ".claude" / "phase_state.json"
     if not state_path.is_file():
         print("BLOCKED: .claude/phase_state.json not found")
         return 2

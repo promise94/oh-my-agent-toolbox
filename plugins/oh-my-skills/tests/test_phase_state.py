@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "plan-standard" / "scripts" / "phase-state.py"
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = ROOT / "scripts" / "phase-state.py"
 
 
 class PhaseStateTests(unittest.TestCase):

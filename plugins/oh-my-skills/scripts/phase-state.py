@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -75,8 +76,9 @@ def archive(root: Path) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("archive",))
+    parser.add_argument("--root", type=Path, default=Path(os.environ.get("CLAUDE_PROJECT_DIR", Path.cwd())))
     args = parser.parse_args()
-    return archive(Path.cwd()) if args.command == "archive" else 2
+    return archive(args.root.resolve()) if args.command == "archive" else 2
 
 
 if __name__ == "__main__":

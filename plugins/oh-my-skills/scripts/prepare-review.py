@@ -42,7 +42,7 @@ REQUEST_TEMPLATE = """# Codex 计划评审请求
 
 ## 输出
 
-按仓库中的 `plan-standard/references/review-subagent-prompt.md` 格式输出完整报告。不要实施修复，不要重写计划。
+按仓库中的 `${CLAUDE_PLUGIN_ROOT}/skills/plan-standard/references/review-subagent-prompt.md` 格式输出完整报告。不要实施修复，不要重写计划。
 """
 
 

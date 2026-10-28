@@ -110,7 +110,7 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=Path(os.environ.get("CLAUDE_PROJECT_DIR", Path.cwd())))
     args = parser.parse_args()
     root = args.root.resolve()
-    source = Path(__file__).resolve().parents[1] / "phase-gate.sh"
+    source = Path(__file__).resolve().parents[1] / "hooks" / "phase-gate.sh"
     settings_path = choose_settings(root)
     try:
         settings = load_settings(settings_path)

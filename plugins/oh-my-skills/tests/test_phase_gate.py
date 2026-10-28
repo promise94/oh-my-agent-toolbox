@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "plan-standard" / "scripts" / "phase-gate.py"
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = ROOT / "scripts" / "phase-gate.py"
 
 
 class PhaseGateTests(unittest.TestCase):
@@ -21,7 +21,7 @@ class PhaseGateTests(unittest.TestCase):
             state_path.parent.mkdir()
             state_path.write_text(json.dumps(state), encoding="utf-8")
             return subprocess.run(
-                [sys.executable, str(SCRIPT)], cwd=root, text=True, capture_output=True
+                [sys.executable, str(SCRIPT)], cwd=root, env={"CLAUDE_PROJECT_DIR": str(root)}, text=True, capture_output=True
             )
 
     def test_planning_requires_review_or_waiver(self):

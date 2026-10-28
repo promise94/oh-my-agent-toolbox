@@ -5,10 +5,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-BOOTSTRAP = ROOT / "plan-standard" / "scripts" / "bootstrap.py"
-REVIEW = ROOT / "codex-plan-review" / "scripts" / "prepare-review.py"
-AUDIT = ROOT / "codex-plan-audit" / "scripts" / "prepare-audit.py"
+ROOT = Path(__file__).resolve().parents[1]
+BOOTSTRAP = ROOT / "scripts" / "bootstrap.py"
+REVIEW = ROOT / "scripts" / "prepare-review.py"
+AUDIT = ROOT / "scripts" / "prepare-audit.py"
 
 
 class IntegrationScriptTests(unittest.TestCase):

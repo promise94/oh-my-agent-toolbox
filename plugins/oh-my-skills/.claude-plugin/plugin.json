@@ -1,0 +1,11 @@
+{
+  "name": "oh-my-skills",
+  "version": "0.1.0",
+  "description": "Reusable Claude skills, hooks, agents, MCP templates, and project configuration helpers.",
+  "author": {
+    "name": "oh-my-skills maintainers"
+  },
+  "repository": "https://gitee.com/promise9495/oh-my-skills",
+  "license": "MIT",
+  "keywords": ["skills", "hooks", "agents", "MCP", "planning"]
+}

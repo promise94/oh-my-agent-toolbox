@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-HOOK = ROOT / "plan-standard" / "phase-gate.sh"
+ROOT = Path(__file__).resolve().parents[1]
+HOOK = ROOT / "hooks" / "phase-gate.sh"
 
 
 class PhaseGateShellTests(unittest.TestCase):
