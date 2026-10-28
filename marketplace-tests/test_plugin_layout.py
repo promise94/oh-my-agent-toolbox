@@ -17,6 +17,7 @@ class PluginLayoutTests(unittest.TestCase):
             PLUGIN / "scripts/bootstrap.py",
             PLUGIN / "scripts/phase-gate.py",
             PLUGIN / "scripts/phase-state.py",
+            PLUGIN / "scripts/phase_model.py",
             PLUGIN / "scripts/prepare-review.py",
             PLUGIN / "scripts/prepare-audit.py",
             PLUGIN / "config-templates/mcp.example.json",

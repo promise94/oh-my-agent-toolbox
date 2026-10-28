@@ -2,6 +2,17 @@
 
 本文件记录公开 marketplace/plugin 的用户可见变更。
 
+## [0.3.0] - 2026-10-28
+
+### Added
+
+- `phase-state.py` 新增 `start` / `set` / `validate` 子命令：状态由脚本写入，带字段白名单、类型校验、状态机校验和原子写入。`start` 拒绝在已有活动计划或未归档终态计划之上新建；`set` 拒绝无法通过门禁校验的写入（例如 review 未处置就切到 execution）；`validate` 与 `phase-gate.py` 结论一致。
+- 新增 `scripts/phase_model.py`，统一状态枚举、结构校验和门禁规则；`phase-gate.py` 改为薄封装，输出与退出码保持不变。
+
+### Changed
+
+- `SKILL.md` 的状态约定从「手写 JSON 片段」改为脚本命令，手写 JSON 不再是受支持路径。
+
 ## [0.2.0] - 2026-10-28
 
 ### Fixed

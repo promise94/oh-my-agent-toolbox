@@ -31,7 +31,7 @@ Claude 与 Codex 的职责边界、bootstrap 流程和安全约束见 [`docs/ins
 
 ## 版本
 
-marketplace 与 plugin 当前版本均为 `0.2.0`。修改 skill、hook、agent、MCP 模板或配置契约时，更新 plugin version；修改 marketplace 索引时更新 marketplace metadata version。变更记录见 [`CHANGELOG.md`](CHANGELOG.md)。
+marketplace 与 plugin 当前版本均为 `0.3.0`。修改 skill、hook、agent、MCP 模板或配置契约时，更新 plugin version；修改 marketplace 索引时更新 marketplace metadata version。变更记录见 [`CHANGELOG.md`](CHANGELOG.md)。
 
 ## 验证
 

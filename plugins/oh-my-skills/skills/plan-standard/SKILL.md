@@ -57,6 +57,28 @@ bootstrap 会将本 skill 的 `phase-gate.sh` 安装到 `$CLAUDE_PROJECT_DIR/.cl
 
 ## 状态约定
 
+状态文件一律通过 `scripts/phase-state.py` 写入，不要手改 JSON：脚本会做字段白名单、类型和状态机校验，拒绝非法写入且不产生半成品文件。允许的字段是 `INT_FIELDS` / `STR_FIELDS` 中的键（`current_phase` 为整数，其余为字符串）。
+
+```bash
+# 创建 planning state（plan_id 默认取计划文件名，必须是 kebab-case）
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/phase-state.py" start --plan "<plan 绝对路径>"
+
+# 写入或更新字段，可重复 --field
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/phase-state.py" set \
+  --field workflow_stage=execution \
+  --field current_phase=1 \
+  --field phase_name="实施阶段" \
+  --field phase_status=in_progress \
+  --field audit_status=pending
+
+# 只读校验当前状态是否允许继续
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/phase-state.py" validate
+```
+
+`start` 拒绝在已有 planning/execution 计划时新建，也拒绝在终态计划未归档时新建。`set` 拒绝无法通过状态机校验的写入（例如 review 未处置就切到 execution）。`validate` 与 `phase-gate.py` 结论一致。
+
+字段 schema 参考：
+
 规划状态：
 
 ```json
@@ -93,9 +115,9 @@ bootstrap 会将本 skill 的 `phase-gate.sh` 安装到 `$CLAUDE_PROJECT_DIR/.cl
 
 1. 澄清会实质影响范围、验收、约束、依赖或方案的歧义；无法澄清的内容记录为假设。
 2. 检查仓库、项目规则和当前工作树，编写并自审计划。
-3. 创建 planning state，然后调用 `$codex-plan-review`；该 skill 负责询问本计划的 review/waiver、执行 `/codex:setup`、生成上下文并通过 `/codex:rescue --fresh --wait` 调用 Codex。
+3. 用 `phase-state.py start` 创建 planning state，然后调用 `$codex-plan-review`；该 skill 负责询问本计划的 review/waiver、执行 `/codex:setup`、生成上下文并通过 `/codex:rescue --fresh --wait` 调用 Codex。
 4. 将 Codex 报告完整展示给用户；发现需要决策时设为 `needs_input`，更新同一计划后再继续。每项发现都要采纳，或记录明确的不采纳原因。完成处理后设为 `completed`。
-5. 用户批准后，在调用 `ExitPlanMode` 前写入 execution state，阶段从 `in_progress` 开始。
+5. 用户批准后，在调用 `ExitPlanMode` 前用 `phase-state.py set` 写入 execution state，阶段从 `in_progress` 开始。
 6. 每次只实施当前阶段，检查 diff，逐条运行该阶段全部验收命令和约束；通过后将阶段标记为 `PASS` 并进入下一阶段。失败修正后重跑；偏差先更新同一计划的决策记录。
 7. 全部阶段通过后调用 `$codex-plan-audit`；该 skill 负责询问 audit/waiver、执行 `/codex:setup`、生成实施摘要并通过 `/codex:rescue --fresh --wait` 调用 Codex。
 8. 展示 Codex audit 并处理所有发现；将 `audit_status` 设为 `completed` 或经用户明确同意设为 `waived`，再写入终态并归档。
