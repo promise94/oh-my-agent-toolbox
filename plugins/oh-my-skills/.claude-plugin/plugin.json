@@ -5,7 +5,7 @@
   "author": {
     "name": "oh-my-agent-toolbox maintainers"
   },
-  "repository": "https://gitee.com/promise9495/oh-my-skills",
+  "repository": "https://github.com/promise94/oh-my-agent-toolbox",
   "license": "MIT",
   "keywords": ["skills", "hooks", "agents", "MCP", "planning"]
 }

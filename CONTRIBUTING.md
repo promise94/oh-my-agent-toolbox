@@ -18,7 +18,14 @@
 4. hook 不应破坏用户已有配置；配置写入必须幂等并可回滚。
 5. 对 skill、plugin manifest、hook、MCP 模板和公共配置契约变化补充测试。
 
-## 提交前验证
+## 文档维护
+
+- 面向用户的安装、更新、卸载、bootstrap 和 Claude/Codex 边界说明维护在 `docs/installation.md`。
+- 常见 marketplace、plugin、skill、hook、Codex 和 MCP 问题维护在 `docs/troubleshooting.md`。
+- 用户可见版本变更记录在 `CHANGELOG.md`；不要把未执行的 tag、push 或远端发布写成已完成。
+- 文档中的公开 marketplace/plugin 名称使用 `oh-my-agent-toolbox`；`plugins/oh-my-skills` 只作为内部目录和 source 路径。
+- 复制安装命令前，确认 marketplace 名称和 plugin 名称均为 `oh-my-agent-toolbox`。
+
 
 ```bash
 python3 -m unittest discover -s marketplace-tests -v
