@@ -6,6 +6,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+PLUGIN_ROOT = Path(__file__).resolve().parents[1]
+REVIEW_FORMAT_DOC = PLUGIN_ROOT / "skills" / "plan-standard" / "references" / "review-subagent-prompt.md"
+
 
 def require_inside(path: Path, directory: Path, label: str) -> Path:
     resolved = path.resolve()
@@ -42,7 +45,7 @@ REQUEST_TEMPLATE = """# Codex 计划评审请求
 
 ## 输出
 
-按仓库中的 `${CLAUDE_PLUGIN_ROOT}/skills/plan-standard/references/review-subagent-prompt.md` 格式输出完整报告。不要实施修复，不要重写计划。
+按 `{review_format_path}` 的格式输出完整报告。不要实施修复，不要重写计划。
 """
 
 
@@ -70,7 +73,13 @@ def main() -> int:
     request.parent.mkdir(parents=True, exist_ok=True)
     context.parent.mkdir(parents=True, exist_ok=True)
     request.write_text(
-        REQUEST_TEMPLATE.format(plan_path=plan, context_path=context, request_path=request), encoding="utf-8"
+        REQUEST_TEMPLATE.format(
+            plan_path=plan,
+            context_path=context,
+            request_path=request,
+            review_format_path=REVIEW_FORMAT_DOC,
+        ),
+        encoding="utf-8",
     )
     context.write_text(
         "# Codex 计划上下文\n\n"

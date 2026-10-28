@@ -52,6 +52,31 @@ class IntegrationScriptTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_review_writes_request_and_context(self):
+        directory, root, plan = self.make_root()
+        try:
+            request = root / ".claude/temp/review-request.md"
+            context = root / ".claude/temp/review-context.md"
+            result = subprocess.run(
+                [sys.executable, str(REVIEW), "--root", str(root), "--plan", str(plan),
+                 "--request", str(request), "--context", str(context)],
+                text=True, capture_output=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotIn("KeyError", result.stderr)
+            request_text = request.read_text(encoding="utf-8")
+            context_text = context.read_text(encoding="utf-8")
+            self.assertIn(str(plan), request_text)
+            self.assertIn(str(context), request_text)
+            self.assertIn(str(request), request_text)
+            self.assertNotIn("CLAUDE_PLUGIN_ROOT", request_text)
+            format_doc = ROOT / "skills" / "plan-standard" / "references" / "review-subagent-prompt.md"
+            self.assertTrue(format_doc.is_file(), format_doc)
+            self.assertIn(str(format_doc.resolve()), request_text)
+            self.assertIn(str(plan), context_text)
+        finally:
+            directory.cleanup()
+
     def test_audit_summary_contains_branch_and_baseline(self):
         directory, root, plan = self.make_root()
         try:
