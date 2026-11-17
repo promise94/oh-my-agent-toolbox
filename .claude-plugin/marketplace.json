@@ -1,0 +1,26 @@
+{
+  "name": "oh-my-agent-toolbox",
+  "owner": {
+    "name": "oh-my-agent-toolbox maintainers"
+  },
+  "metadata": {
+    "description": "Reusable Claude skills, hooks, agents, MCP templates, and project configuration helpers.",
+    "version": "1.0.1"
+  },
+  "plugins": [
+    {
+      "name": "oh-my-agent-toolbox",
+      "source": "./plugins/oh-my-skills",
+      "description": "Reusable planning, review, audit, hook, and configuration tooling for Claude and Codex.",
+      "version": "1.0.1",
+      "license": "MIT",
+      "keywords": [
+        "skills",
+        "hooks",
+        "agents",
+        "MCP",
+        "planning"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "oh-my-agent-toolbox-local",
+  "plugins": [
+    {
+      "name": "oh-my-agent-toolbox",
+      "source": {"source": "local", "path": "./"},
+      "policy": {"installation": "AVAILABLE", "authentication": "NONE"}
+    }
+  ]
+}

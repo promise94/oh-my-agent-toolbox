@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "skills": ["./skills"],
+  "commands": {
+    "plan": { "template": "Use the portable plan workflow for $ARGUMENTS.", "agent": "plan" },
+    "review": { "template": "Review $ARGUMENTS using the provider-neutral checklist.", "agent": "reviewer", "subagent": true },
+    "audit": { "template": "Audit $ARGUMENTS against the provider-neutral checklist.", "agent": "reviewer", "subagent": true }
+  },
+  "agents": {
+    "reviewer": {
+      "mode": "subagent",
+      "description": "Reviews plans and changes without editing files"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "oh-my-agent-toolbox",
+  "version": "0.7.1",
+  "description": "Portable Agent Skills and opt-in MCP configuration for ChatGPT and Codex.",
+  "license": "MIT"
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "id": "code-review",
+      "version": "1.0.1",
+      "hosts": [
+        "claude"
+      ],
+      "portable_hosts": [
+        "chatgpt",
+        "codex",
+        "opencode"
+      ],
+      "dependencies": [
+        "glab",
+        "git"
+      ],
+      "allow_implicit_invocation": true
+    },
+    {
+      "id": "plan-audit",
+      "version": "1.0.1",
+      "hosts": [
+        "claude",
+        "codex"
+      ],
+      "dependencies": [
+        "python3",
+        "codex-plugin"
+      ],
+      "allow_implicit_invocation": true
+    },
+    {
+      "id": "plan-review",
+      "version": "1.0.1",
+      "hosts": [
+        "claude",
+        "codex"
+      ],
+      "dependencies": [
+        "python3",
+        "codex-plugin"
+      ],
+      "allow_implicit_invocation": true
+    },
+    {
+      "id": "planning-workflow",
+      "version": "2.0.0",
+      "hosts": [
+        "claude",
+        "codex"
+      ],
+      "dependencies": [
+        "python3",
+        "git"
+      ],
+      "allow_implicit_invocation": true
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "oh-my-agent-toolbox-claude",
+  "version": "0.7.1",
+  "description": "Claude adapter for oh-my-agent-toolbox skills and project phase gates.",
+  "license": "MIT"
+}

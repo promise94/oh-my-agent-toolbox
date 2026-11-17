@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "plan_id", "plan_path", "workflow_stage", "review_status", "audit_status"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 2},
+    "plan_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "plan_path": {"type": "string"},
+    "workflow_stage": {"enum": ["planning", "execution", "completed", "cancelled", "abandoned"]},
+    "review_status": {"enum": ["pending", "needs_input", "blocked", "waived", "completed"]},
+    "review_provider": {"type": "string"},
+    "review_note": {"type": "string"},
+    "audit_status": {"enum": ["pending", "needs_input", "blocked", "waived", "completed"]},
+    "audit_provider": {"type": "string"},
+    "phase_status": {"enum": ["in_progress", "PASS", "FAIL", "DEVIATION", "BLOCKED"]}
+  },
+  "additionalProperties": true
+}
